@@ -1,0 +1,16 @@
+{
+  "name": "rap-tounsi-radio",
+  "version": "1.0.0",
+  "description": "Tounsi rap radio bot 24/7",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "oussama",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/voice": "^0.16.0",
+    "discord.js": "^14.13.0",
+    "play-dl": "^1.9.6"
+  }
+}
