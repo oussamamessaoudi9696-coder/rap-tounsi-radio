@@ -60,7 +60,7 @@ client.once("clientReady", async () => {
     // كل ساعتين
     setInterval(() => {
       sendZikr(channel);
-    }, 7200000);
+    }, 60000);
 
   } catch (err) {
     console.error(err);
