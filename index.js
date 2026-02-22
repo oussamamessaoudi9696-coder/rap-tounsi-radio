@@ -9,108 +9,40 @@ app.get("/", (req, res) => {
 app.listen(3000, () => {
   console.log("Web server started");
 });
-const { 
-  Client, 
-  GatewayIntentBits, 
-  REST, 
-  Routes, 
-  SlashCommandBuilder 
-} = require("discord.js");
 
-const { 
-  joinVoiceChannel, 
-  createAudioPlayer, 
-  createAudioResource 
-} = require("@discordjs/voice");
-
-const play = require("play-dl");
+const { Client, GatewayIntentBits } = require("discord.js");
 
 const TOKEN = process.env.TOKEN;
-const CLIENT_ID = process.env.CLIENT_ID;
-const GUILD_ID = process.env.GUILD_ID;
+const CHANNEL_ID = process.env.CHANNEL_ID; // تحط هنا id الشانل
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates
-  ],
+  intents: [GatewayIntentBits.Guilds]
 });
 
-const commands = [
-  new SlashCommandBuilder()
-    .setName("play")
-    .setDescription("Play a song")
-    .addStringOption(option =>
-      option.setName("song")
-        .setDescription("Song name or URL")
-        .setRequired(true)
-    )
-    .toJSON(),
+const azkar = [
+  "سبحان الله 🤍",
+  "الحمد لله 🤍",
+  "لا إله إلا الله 🤍",
+  "الله أكبر 🤍",
+  "استغفر الله 🤍",
+  "لا حول ولا قوة إلا بالله 🤍",
+  "اللهم صل وسلم على نبينا محمد ﷺ 🤍"
 ];
 
-client.once("ready", async () => {
-  console.log(`Ready as ${client.user.tag}`);
+client.once("ready", () => {
+  console.log(`Logged in as ${client.user.tag}`);
 
-  const rest = new REST({ version: "10" }).setToken(TOKEN);
+  const channel = client.channels.cache.get(CHANNEL_ID);
 
-  try {
-    console.log("Registering commands...");
-
-    await rest.put(
-      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
-      { body: commands }
-    );
-
-    console.log("Commands registered!");
-  } catch (error) {
-    console.error(error);
+  if (!channel) {
+    console.log("Channel not found!");
+    return;
   }
-});
 
-const player = createAudioPlayer();
-
-client.on("interactionCreate", async interaction => {
-  if (!interaction.isChatInputCommand()) return;
-
-  if (interaction.commandName === "play") {
-    const query = interaction.options.getString("song");
-
-    const voiceChannel = interaction.member.voice.channel;
-    if (!voiceChannel) {
-      return interaction.reply("❌ ادخل voice channel أولاً");
-    }
-
-    await interaction.reply("🔎 نلوج على الغناية...");
-
-    try {
-      const result = await play.search(query, { limit: 1 });
-
-      if (!result.length) {
-        return interaction.editReply("❌ ما لقيتش الغناية");
-      }
-
-      const url = result[0].url;
-      const stream = await play.stream(url);
-
-      const resource = createAudioResource(stream.stream, {
-        inputType: stream.type,
-      });
-
-      const connection = joinVoiceChannel({
-        channelId: voiceChannel.id,
-        guildId: voiceChannel.guild.id,
-        adapterCreator: voiceChannel.guild.voiceAdapterCreator,
-      });
-
-      connection.subscribe(player);
-      player.play(resource);
-
-      interaction.editReply(`🎶 Now playing: ${result[0].title}`);
-    } catch (error) {
-      console.error(error);
-      interaction.editReply("❌ صار مشكل");
-    }
-  }
+  setInterval(() => {
+    const randomZikr = azkar[Math.floor(Math.random() * azkar.length)];
+    channel.send(randomZikr);
+  }, 7200000); // كل ساعتين
 });
 
 client.login(TOKEN);
