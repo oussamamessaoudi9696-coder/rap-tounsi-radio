@@ -3,7 +3,7 @@ process.env.FFMPEG_PATH = ffmpeg;
 
 const { Client, GatewayIntentBits } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const play = require('play-dl');
+const ytdl = require('@distube/ytdl-core');
 const sodium = require('libsodium-wrappers');
 
 const client = new Client({
@@ -32,11 +32,13 @@ client.once('ready', async () => {
         adapterCreator: guild.voiceAdapterCreator,
     });
 
-    const stream = await play.stream(RADIO_URL);
+    const stream = ytdl(RADIO_URL, {
+  filter: "audioonly",
+  quality: "highestaudio",
+  highWaterMark: 1 << 25
+});
 
-    const resource = createAudioResource(stream.stream, {
-        inputType: stream.type
-    });
+const resource = createAudioResource(stream);
 
     const player = createAudioPlayer();
 
