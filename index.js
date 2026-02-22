@@ -51,9 +51,23 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const GUILD_ID = process.env.GUILD_ID;
 
 const player = createAudioPlayer();
-
 client.once("ready", async () => {
   console.log(`Ready as ${client.user.tag}`);
+
+  const rest = new REST({ version: "10" }).setToken(TOKEN);
+
+  try {
+    console.log("Registering commands...");
+
+    await rest.put(
+      Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
+      { body: commands }
+    );
+
+    console.log("Commands registered!");
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 client.on("interactionCreate", async interaction => {
