@@ -12,24 +12,22 @@ client.once('ready', async () => {
   console.log(`Logged in as ${client.user.tag}`);
 
   const guild = client.guilds.cache.first();
-  if (!guild) return;
+  if (!guild) return console.log("No guild found");
 
-  const channel = guild.channels.cache.find(
-    c => c.name === "Music" && c.type === 2
-  );
+  const voiceChannel = guild.channels.cache
+    .filter(c => c.type === 2)
+    .first();
 
-  if (!channel) {
-    console.log("Voice channel not found");
-    return;
-  }
+  if (!voiceChannel)
+    return console.log("No voice channel found");
 
   joinVoiceChannel({
-    channelId: channel.id,
+    channelId: voiceChannel.id,
     guildId: guild.id,
     adapterCreator: guild.voiceAdapterCreator,
   });
 
-  console.log("Joined Music voice channel!");
+  console.log("Joined:", voiceChannel.name);
 });
 
 client.login(process.env.TOKEN);
