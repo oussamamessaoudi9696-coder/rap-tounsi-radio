@@ -14,9 +14,7 @@ client.once('ready', async () => {
   const guild = client.guilds.cache.first();
   if (!guild) return console.log("No guild found");
 
-  const voiceChannel = guild.channels.cache
-    .filter(c => c.type === 2)
-    .first();
+  const voiceChannel = guild.channels.cache.get("1474884054112403609");
 
   if (!voiceChannel)
     return console.log("No voice channel found");
