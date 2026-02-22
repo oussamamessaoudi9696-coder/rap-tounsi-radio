@@ -1,31 +1,49 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const { joinVoiceChannel } = require('@discordjs/voice');
+const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
+const play = require('play-dl');
+const sodium = require('libsodium-wrappers');
 
 const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildVoiceStates,
-  ],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]
 });
+
+const TOKEN = process.env.TOKEN;
+
+// رابط اليوتيوب متاع الراديو (بدلو بالرابط متاعك)
+const RADIO_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk";
 
 client.once('ready', async () => {
-  console.log(`Logged in as ${client.user.tag}`);
+    console.log(`Logged in as ${client.user.tag}`);
 
-  const guild = client.guilds.cache.first();
-  if (!guild) return console.log("No guild found");
+    await sodium.ready;
 
-  const voiceChannel = guild.channels.cache.get("1474884054112403609");
+    const guild = client.guilds.cache.first();
+    if (!guild) return;
 
-  if (!voiceChannel)
-    return console.log("No voice channel found");
+    const channel = guild.channels.cache.find(c => c.type === 2); // voice channel
+    if (!channel) return;
 
-  joinVoiceChannel({
-    channelId: voiceChannel.id,
-    guildId: guild.id,
-    adapterCreator: guild.voiceAdapterCreator,
-  });
+    const connection = joinVoiceChannel({
+        channelId: channel.id,
+        guildId: guild.id,
+        adapterCreator: guild.voiceAdapterCreator,
+    });
 
-  console.log("Joined:", voiceChannel.name);
+    const stream = await play.stream(RADIO_URL);
+
+    const resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+    });
+
+    const player = createAudioPlayer();
+
+    player.play(resource);
+    connection.subscribe(player);
+
+    player.on(AudioPlayerStatus.Playing, () => {
+        console.log("Radio is playing!");
+    });
+
 });
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
