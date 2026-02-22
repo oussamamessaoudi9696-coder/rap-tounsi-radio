@@ -13,7 +13,7 @@ const client = new Client({
 const TOKEN = process.env.TOKEN;
 
 // رابط اليوتيوب متاع الراديو (بدلو بالرابط متاعك)
-const RADIO_URL = "https://www.youtube.com/watch?v=jfKfPfyJRdk";
+const RADIO_URL = "https://youtu.be/d-XtMwMDY4k?si=1kmbQjuWq7guJKPa";
 
 client.once('ready', async () => {
     console.log(`Logged in as ${client.user.tag}`);
