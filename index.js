@@ -1,3 +1,6 @@
+const ffmpeg = require('ffmpeg-static');
+process.env.FFMPEG_PATH = ffmpeg;
+
 const { Client, GatewayIntentBits } = require('discord.js');
 const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
 const play = require('play-dl');
@@ -20,7 +23,7 @@ client.once('ready', async () => {
     const guild = client.guilds.cache.first();
     if (!guild) return;
 
-    const channel = guild.channels.cache.find(c => c.type === 2); // voice channel
+    const channel = guild.channels.cache.get("1474884054112403609");; // voice channel
     if (!channel) return;
 
     const connection = joinVoiceChannel({
