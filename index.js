@@ -2,29 +2,34 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const { joinVoiceChannel } = require('@discordjs/voice');
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
 });
 
-client.once('ready', () => {
-  console.log('Rap Tounsi Radio Bot is Online!');
-});
+client.once('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}`);
 
-client.on('messageCreate', async (message) => {
-  if (message.content === '+join') {
-    if (message.member.voice.channel) {
+  const guild = client.guilds.cache.first();
+  if (!guild) return;
 
-      joinVoiceChannel({
-        channelId: message.member.voice.channel.id,
-        guildId: message.guild.id,
-        adapterCreator: message.guild.voiceAdapterCreator,
-      });
+  const channel = guild.channels.cache.find(
+    c => c.name === "Music" && c.type === 2
+  );
 
-      message.reply('دخلت للـ Voice ✅');
-
-    } else {
-      message.reply('ادخل انت للـ Voice الأول ❌');
-    }
+  if (!channel) {
+    console.log("Voice channel not found");
+    return;
   }
+
+  joinVoiceChannel({
+    channelId: channel.id,
+    guildId: guild.id,
+    adapterCreator: guild.voiceAdapterCreator,
+  });
+
+  console.log("Joined Music voice channel!");
 });
 
 client.login(process.env.TOKEN);
