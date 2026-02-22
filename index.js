@@ -1,53 +1,86 @@
-const ffmpeg = require('ffmpeg-static');
-process.env.FFMPEG_PATH = ffmpeg;
+const { 
+  Client, 
+  GatewayIntentBits, 
+  SlashCommandBuilder, 
+  REST, 
+  Routes 
+} = require("discord.js");
 
-const { Client, GatewayIntentBits } = require('discord.js');
-const { joinVoiceChannel, createAudioPlayer, createAudioResource, AudioPlayerStatus } = require('@discordjs/voice');
-const ytdl = require('@distube/ytdl-core');
-const sodium = require('libsodium-wrappers');
+const { 
+  joinVoiceChannel, 
+  createAudioPlayer, 
+  createAudioResource 
+} = require("@discordjs/voice");
+
+const play = require("play-dl");
 
 const client = new Client({
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates]
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildVoiceStates
+  ]
 });
 
 const TOKEN = process.env.TOKEN;
+const CLIENT_ID = process.env.CLIENT_ID;
+const GUILD_ID = process.env.GUILD_ID;
 
-// رابط اليوتيوب متاع الراديو (بدلو بالرابط متاعك)
-const RADIO_URL = "https://youtu.be/d-XtMwMDY4k?si=1kmbQjuWq7guJKPa";
+const player = createAudioPlayer();
 
-client.once('ready', async () => {
-    console.log(`Logged in as ${client.user.tag}`);
-
-    await sodium.ready;
-
-    const guild = client.guilds.cache.first();
-    if (!guild) return;
-
-    const channel = guild.channels.cache.get("1474884054112403609");; // voice channel
-    if (!channel) return;
-
-    const connection = joinVoiceChannel({
-        channelId: channel.id,
-        guildId: guild.id,
-        adapterCreator: guild.voiceAdapterCreator,
-    });
-
-    const stream = ytdl(RADIO_URL, {
-  filter: "audioonly",
-  quality: "highestaudio",
-  highWaterMark: 1 << 25
+client.once("ready", async () => {
+  console.log(`Ready as ${client.user.tag}`);
 });
 
-const resource = createAudioResource(stream);
+client.on("interactionCreate", async interaction => {
 
-    const player = createAudioPlayer();
+  if (!interaction.isChatInputCommand()) return;
 
-    player.play(resource);
-    connection.subscribe(player);
+  if (interaction.commandName === "play") {
 
-    player.on(AudioPlayerStatus.Playing, () => {
-        console.log("Radio is playing!");
-    });
+    const query = interaction.options.getString("song");
+
+    const voiceChannel = interaction.member.voice.channel;
+
+    if (!voiceChannel) {
+      return interaction.reply("❌ ادخل voice channel اول");
+    }
+
+    await interaction.reply("🔎 نلوج على الغناية...");
+
+    try {
+
+      const result = await play.search(query, { limit: 1 });
+
+      if (!result.length) {
+        return interaction.editReply("❌ ما لقيتش الغناية");
+      }
+
+      const url = result[0].url;
+
+      const stream = await play.stream(url);
+
+      const resource = createAudioResource(stream.stream, {
+        inputType: stream.type
+      });
+
+      const connection = joinVoiceChannel({
+        channelId: voiceChannel.id,
+        guildId: voiceChannel.guild.id,
+        adapterCreator: voiceChannel.guild.voiceAdapterCreator
+      });
+
+      connection.subscribe(player);
+
+      player.play(resource);
+
+      interaction.editReply(`🎧 توا نشغل: ${result[0].title}`);
+
+    } catch (err) {
+      console.log(err);
+      interaction.editReply("❌ صار error");
+    }
+
+  }
 
 });
 
